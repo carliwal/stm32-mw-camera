@@ -15,6 +15,8 @@
   ******************************************************************************
   */
 
+#include "stdint.h"
+
 #define VD55G1_FWPATCH_REVISION_MAJOR_CUT_2 2
 #define VD55G1_FWPATCH_REVISION_MINOR_CUT_2 2
 
