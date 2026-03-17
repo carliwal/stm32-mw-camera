@@ -57,6 +57,7 @@ extern "C" {
 
 typedef enum {
   CMW_UNKNOWN_Sensor = 0x0,
+  CMW_VD55G0_Sensor,
   CMW_VD66GY_Sensor,
   CMW_VD56G3_Sensor,
   CMW_IMX335_Sensor,
@@ -84,6 +85,12 @@ typedef struct
   uint32_t pixel_format; /*!< This parameter can be a value from @ref CMW_PIXEL_FORMAT */
   uint32_t CSI_PHYBitrate;
 } CMW_VD55G1_config_t;
+
+typedef struct
+{
+  uint32_t pixel_format; /*!< This parameter can be a value from @ref CMW_PIXEL_FORMAT */
+  uint32_t CSI_PHYBitrate;
+} CMW_VD55G0_config_t;
 
 typedef struct
 {
@@ -119,6 +126,7 @@ typedef struct
   CMW_Sensor_Name_t selected_sensor;
   union {
     CMW_IMX335_config_t imx335_config;
+    CMW_VD55G0_config_t vd55g0_config;
     CMW_VD66GY_config_t vd66gy_config;
     CMW_VD56G3_config_t vd56g3_config;
     CMW_VD55G1_config_t vd55g1_config;
