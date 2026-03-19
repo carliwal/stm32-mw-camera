@@ -25,30 +25,39 @@
 #include "cmw_utils.h"
 #include "cmw_io.h"
 #if defined(USE_VD55G0_SENSOR)
+#pragma message("Including headers for VD55G0 sensor")
 #include "cmw_vd55g0.h"
 #endif
 #if defined(USE_VD55G1_SENSOR)
+#pragma message("Including headers for VD55G1 sensor")
 #include "cmw_vd55g1.h"
 #endif
 #if defined(USE_VD65G4_SENSOR)
+#pragma message("Including headers for VD65G4 sensor")
 #include "cmw_vd65g4.h"
 #endif
 #if defined(USE_IMX335_SENSOR)
+#pragma message("Including headers for IMX335 sensor")
 #include "cmw_imx335.h"
 #endif
 #if defined(USE_OV5640_SENSOR)
+#pragma message("Including headers for OV5640 sensor")
 #include "cmw_ov5640.h"
 #endif
 #if defined(USE_VD66GY_SENSOR)
+#pragma message("Including headers for VD66GY sensor")
 #include "cmw_vd66gy.h"
 #endif
 #if defined(USE_VD56G3_SENSOR)
+#pragma message("Including headers for VD56G3 sensor")
 #include "cmw_vd56g3.h"
 #endif
 #if defined(USE_VD1943_SENSOR)
+#pragma message("Including headers for VD1943 sensor")
 #include "cmw_vd1943.h"
 #endif
 #if defined (USE_VD5943_SENSOR)
+#pragma message("Including headers for VD5943 sensor")
 #include "cmw_vd5943.h"
 #endif
 #include "assert.h"
