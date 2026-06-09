@@ -26,9 +26,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 
   ./sensors/cmw_vd55g0.c
   ./sensors/cmw_vd55g1.c
-
   ./sensors/vd55g0/vd55g0.c
-  ./sensors/vd55g0/vd55g0_patch.c
+  ./sensors/vd55g0/vd55g0_patch_cut_2.c
   ./sensors/vd55g1/vd55g1.c
   ./sensors/vd55g1/vd55g1_patch_cut_2.c
 )

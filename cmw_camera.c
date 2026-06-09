@@ -940,7 +940,7 @@ void HAL_DCMIPP_PIPE_FrameEventCallback(DCMIPP_HandleTypeDef *hdcmipp, uint32_t 
   * @param  hdcmipp  DCMIPP handle
   * @retval None
   */
-void HAL_DCMIPP_MspInit(DCMIPP_HandleTypeDef *hdcmipp)
+void CMW_DCMIPP_MspInit(DCMIPP_HandleTypeDef *hdcmipp)
 {
   UNUSED(hdcmipp);
 
@@ -975,7 +975,7 @@ void HAL_DCMIPP_MspInit(DCMIPP_HandleTypeDef *hdcmipp)
   * @param  hdcmipp  DCMIPP handle
   * @retval None
   */
-void HAL_DCMIPP_MspDeInit(DCMIPP_HandleTypeDef *hdcmipp)
+void CMW_DCMIPP_MspDeInit(DCMIPP_HandleTypeDef *hdcmipp)
 {
   UNUSED(hdcmipp);
 
@@ -1106,6 +1106,7 @@ static ISP_StatusTypeDef CB_ISP_GetSensorInfo(uint32_t camera_instance, ISP_Sens
 }
 #endif
 
+
 #if defined(USE_VD55G0_SENSOR)
 static int32_t CMW_CAMERA_VD55G0_Init(CMW_Sensor_Init_t *initSensors_params)
 {
@@ -1123,7 +1124,6 @@ static int32_t CMW_CAMERA_VD55G0_Init(CMW_Sensor_Init_t *initSensors_params)
   camera_bsp.vd55g0_bsp.DeInit      = CMW_I2C_DEINIT;
   camera_bsp.vd55g0_bsp.WriteReg    = CMW_I2C_WRITEREG16;
   camera_bsp.vd55g0_bsp.ReadReg     = CMW_I2C_READREG16;
-  camera_bsp.vd55g0_bsp.GetTick     = BSP_GetTick;
   camera_bsp.vd55g0_bsp.Delay       = HAL_Delay;
   camera_bsp.vd55g0_bsp.ShutdownPin = CMW_CAMERA_ShutdownPin;
   camera_bsp.vd55g0_bsp.EnablePin   = CMW_CAMERA_EnablePin;
@@ -1136,9 +1136,11 @@ static int32_t CMW_CAMERA_VD55G0_Init(CMW_Sensor_Init_t *initSensors_params)
 
   if ((connected_sensor != CMW_VD55G0_Sensor) && (connected_sensor != CMW_UNKNOWN_Sensor))
   {
+    /* If the selected sensor in the application side has selected a different sensors than VD55G0 */
     return CMW_ERROR_COMPONENT_FAILURE;
   }
 
+  /* Special case: when resolution is not specified take the full sensor resolution */
   if ((initSensors_params->width == 0U) || (initSensors_params->height == 0U))
   {
     initSensors_params->width = VD55G0_MAX_WIDTH;
@@ -1147,7 +1149,7 @@ static int32_t CMW_CAMERA_VD55G0_Init(CMW_Sensor_Init_t *initSensors_params)
 
   CMW_VD55G0_SetDefaultSensorValues(&default_sensor_config);
   initSensors_params->sensor_config = initSensors_params->sensor_config ? initSensors_params->sensor_config : &default_sensor_config;
-  sensor_config = (CMW_VD55G0_config_t *)initSensors_params->sensor_config;
+  sensor_config = (CMW_VD55G0_config_t *)(initSensors_params->sensor_config);
 
   ret = Camera_Drv.Init(&camera_bsp, initSensors_params);
   if (ret != CMW_ERROR_NONE)
@@ -1167,14 +1169,18 @@ static int32_t CMW_CAMERA_VD55G0_Init(CMW_Sensor_Init_t *initSensors_params)
   switch (sensor_config->pixel_format)
   {
     case CMW_PIXEL_FORMAT_RAW8:
+    {
       dt_format = DCMIPP_CSI_DT_BPP8;
       dt = DCMIPP_DT_RAW8;
       break;
+    }
     case CMW_PIXEL_FORMAT_RAW10:
     case CMW_PIXEL_FORMAT_DEFAULT:
+    {
       dt_format = DCMIPP_CSI_DT_BPP10;
       dt = DCMIPP_DT_RAW10;
       break;
+    }
     default:
       return CMW_ERROR_COMPONENT_FAILURE;
   }
@@ -1188,6 +1194,7 @@ static int32_t CMW_CAMERA_VD55G0_Init(CMW_Sensor_Init_t *initSensors_params)
   csi_pipe_conf.DataTypeMode = DCMIPP_DTMODE_DTIDA;
   csi_pipe_conf.DataTypeIDA = dt;
   csi_pipe_conf.DataTypeIDB = 0;
+  /* Pre-initialize CSI config for all the pipes */
   for (uint32_t i = DCMIPP_PIPE0; i <= DCMIPP_PIPE2; i++)
   {
     ret = HAL_DCMIPP_CSI_PIPE_SetConfig(&hcamera_dcmipp, i, &csi_pipe_conf);
@@ -1200,6 +1207,8 @@ static int32_t CMW_CAMERA_VD55G0_Init(CMW_Sensor_Init_t *initSensors_params)
   return CMW_ERROR_NONE;
 }
 #endif
+
+
 
 #if defined(USE_VD55G1_SENSOR)
 static int32_t CMW_CAMERA_VD55G1_Init( CMW_Sensor_Init_t *initSensors_params)

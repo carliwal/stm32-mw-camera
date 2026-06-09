@@ -5,7 +5,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2026 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -19,141 +19,203 @@
 #define VD55G0_H
 
 #ifdef __cplusplus
-extern "C" {
+ extern "C" {
 #endif
 
+#include <stdarg.h>
 #include <stdint.h>
 
-#define VD55G0_MAX_WIDTH  644U
-#define VD55G0_MAX_HEIGHT 604U
+#define VD55G0_LVL_ERROR 0
+#define VD55G0_LVL_WARNING 1
+#define VD55G0_LVL_NOTICE 2
+#define VD55G0_LVL_DBG(l) (3 + (l))
+#define VD55G0_MAX_WIDTH  640
+#define VD55G0_MAX_HEIGHT 600
 
+/* Analog gain [1, 8] is computed with the following logic :
+ * 32/(32 - again_reg), with again_reg in the range [0, 28] */
 #define VD55G0_ANALOG_GAIN_MIN  0
-#define VD55G0_ANALOG_GAIN_MAX  24
-#define VD55G0_DIGITAL_GAIN_MIN 0x0100U
-#define VD55G0_DIGITAL_GAIN_MAX 0x0800U
+#define VD55G0_ANALOG_GAIN_MAX  28
+/* Digital gain [1.00, 32.00] is coded as a Fixed Point 5.8
+ * which corresponds to sensor values in the range [0x100, 0x400] */
+#define VD55G0_DIGITAL_GAIN_MIN 0x100
+#define VD55G0_DIGITAL_GAIN_MAX 0x400
 
-#define VD55G0_MIN_EXPOSURE     19U
-#define VD55G0_MAX_EXPOSURE     32744U
+enum {
+  VD55G0_MIN_FPS = 2,
+  /* Speed-range table max frame rate is 186.767 fps at 1200 Mbps. */
+  VD55G0_MAX_FPS = 186,
+};
 
-#define VD55G0_MIN_FPS          2
-#define VD55G0_MAX_FPS          152
+enum {
+  VD55G0_AWU_THRESHOLD_DEFAULT = 0,
+  VD55G0_AWU_THRESHOLD_MIN = 2,
+  VD55G0_AWU_THRESHOLD_MAX = 128,
+};
 
-/* VD55G0 Sensor Context Structure */
-typedef struct VD55G0_Ctx {
-  /* I2C Interface */
-  int (*ReadReg)(uint16_t Addr, uint16_t Reg, uint8_t *pData, uint16_t Size);
-  int (*WriteReg)(uint16_t Addr, uint16_t Reg, const uint8_t *pData, uint16_t Size);
-  uint16_t Address;
+typedef enum {
+  VD55G0_RES_QVGA_320_240,
+  VD55G0_RES_VGA_640_480,
+  VD55G0_RES_FULL_640_600,
+} VD55G0_Res_t;
 
-  /* Power Control */
-  int (*ShutdownPin)(uint8_t State);
+typedef enum {
+  VD55G0_MIRROR_FLIP_NONE,
+  VD55G0_FLIP,
+  VD55G0_MIRROR,
+  VD55G0_MIRROR_FLIP
+} VD55G0_MirrorFlip_t;
 
-  /* Timing */
-  uint32_t (*GetTick)(void);
-  void (*Delay)(uint32_t DelayMs);
+typedef enum {
+  VD55G0_PATGEN_DISABLE,
+  VD55G0_PATGEN_DIAGONAL_GRAYSCALE,
+  VD55G0_PATGEN_PSEUDO_RANDOM,
+} VD55G0_PatGen_t;
 
-  /* Sensor State */
-  uint8_t IsInitialized;
-  uint8_t CurrentContext;
-  uint16_t LineLength;
-  uint32_t CurrentWidth;
-  uint32_t CurrentHeight;
-  uint32_t PixelDepth;
-} VD55G0_Ctx;
+typedef enum {
+  VD55G0_FLICKER_FREE_NONE,
+  VD55G0_FLICKER_FREE_50HZ,
+  VD55G0_FLICKER_FREE_60HZ
+} VD55G0_Flicker_t;
 
-/* VD55G0 Public Functions */
+typedef enum {
+  VD55G0_EXPOSURE_MODE_AUTO = 0,
+  VD55G0_EXPOSURE_MODE_FREEZE = 1,
+  VD55G0_EXPOSURE_MODE_MANUAL = 2,
+} VD55G0_ExposureMode_t;
 
-/**
-  * @brief  Initialize VD55G0 sensor
-  * @param  ctx     Pointer to VD55G0 context
-  * @param  width   Image width
-  * @param  height  Image height
-  * @param  fps     Frame rate
-  * @return 0 if successful, error code otherwise
-  */
-int VD55G0_Init(VD55G0_Ctx *ctx, uint32_t width, uint32_t height, uint32_t fps);
+enum {
+  VD55G0_MIN_BRIGHTNESS = 0,
+  VD55G0_MAX_BRIGHTNESS = 100,
+};
 
-/**
-  * @brief  De-initialize VD55G0 sensor
-  * @param  ctx     Pointer to VD55G0 context
-  * @return 0 if successful
-  */
-int VD55G0_DeInit(VD55G0_Ctx *ctx);
+enum {
+  /* Speed-range table covers output speed from 684 Mbps to 1200 Mbps. */
+  VD55G0_MIN_DATARATE = 684000000,
+  VD55G0_DEFAULT_DATARATE = 1200000000,
+  VD55G0_MAX_DATARATE = 1200000000,
+};
 
-/**
-  * @brief  Start streaming from VD55G0
-  * @param  ctx     Pointer to VD55G0 context
-  * @return 0 if successful
-  */
-int VD55G0_Start(VD55G0_Ctx *ctx);
+typedef enum {
+  VD55G0_GPIO_FSYNC_OUT = 0,
+  VD55G0_GPIO_GPIO_IN = 1,
+  VD55G0_GPIO_STROBE = 2,
+  VD55G0_GPIO_PWM_STROBE = 3,
+  VD55G0_GPIO_PWM = 4,
+  VD55G0_GPIO_OUT = 5,
+  VD55G0_GPIO_VSYNC_OUT_MODE0 = 6,
+  VD55G0_GPIO_VSYNC_OUT_MODE1 = 7,
+  VD55G0_GPIO_VSYNC_OUT_MODE2 = 8,
+  VD55G0_GPIO_EVENT_TRACKER = 9,
+  VD55G0_GPIO_VT_SLAVE_MODE = 0xa,
+  VD55G0_GPIO_IMAGE_READOUT = 0xc,
+  VD55G0_GPIO_AWU_DETECTION = 0xd,
+} VD55G0_GPIO_Mode_t;
 
-/**
-  * @brief  Stop streaming from VD55G0
-  * @param  ctx     Pointer to VD55G0 context
-  * @return 0 if successful
-  */
-int VD55G0_Stop(VD55G0_Ctx *ctx);
+typedef enum {
+  VD55G0_GPIO_LOW = (0 << 4),
+  VD55G0_GPIO_HIGH = (1 << 4),
+} VD55G0_GPIO_Value_t;
 
-/**
-  * @brief  Set sensor gain
-  * @param  ctx     Pointer to VD55G0 context
-  * @param  gain    Gain value in millidecibels (mdB)
-  * @return 0 if successful
-  */
-int VD55G0_SetGain(VD55G0_Ctx *ctx, int32_t gain);
+typedef enum {
+  VD55G0_GPIO_NO_INVERSION = (0 << 5),
+  VD55G0_GPIO_INVERTED = (1 << 5),
+} VD55G0_GPIO_Polarity_t;
 
-/**
-  * @brief  Set sensor exposure time
-  * @param  ctx         Pointer to VD55G0 context
-  * @param  exposure    Exposure time in coarse integration lines
-  * @return 0 if successful
-  */
-int VD55G0_SetExposure(VD55G0_Ctx *ctx, int32_t exposure);
+typedef enum {
+  VD55G0_GPIO_0,
+  VD55G0_GPIO_1,
+  VD55G0_GPIO_2,
+  VD55G0_GPIO_3,
+  VD55G0_GPIO_NB
+} VD55G0_GPIO_t;
 
-/**
-  * @brief  Set exposure mode (Manual/Auto/Freeze)
-  * @param  ctx     Pointer to VD55G0 context
-  * @param  mode    Exposure mode (0=Auto, 1=Freeze, 2=Manual)
-  * @return 0 if successful
-  */
-int VD55G0_SetExposureMode(VD55G0_Ctx *ctx, uint8_t mode);
+/* Output interface configuration */
+typedef struct {
+  int data_rate_in_mps;
+  int clock_lane_swap_enable;
+  int data_lane_swap_enable;
+} VD55G0_OutItf_Config_t;
 
-/**
-  * @brief  Set test pattern
-  * @param  ctx      Pointer to VD55G0 context
-  * @param  pattern  Pattern type
-  * @return 0 if successful
-  */
-int VD55G0_SetTestPattern(VD55G0_Ctx *ctx, uint16_t pattern);
+/* Auto wakeup configuration */
+typedef struct {
+  int is_enable;
+  int convergence_frame_rate;
+  int awu_frame_rate;
+  int zone_nb;
+  int threshold;
+} VD55G0_AWUConfig_t;
 
-/**
-  * @brief  Set pixel format (RAW8 or RAW10)
-  * @param  ctx      Pointer to VD55G0 context
-  * @param  format   Format (0x08=RAW8, 0x0A=RAW10)
-  * @return 0 if successful
-  */
-int VD55G0_SetPixelFormat(VD55G0_Ctx *ctx, uint8_t format);
+/* VD55G0 configuration */
+typedef struct {
+  int ext_clock_freq_in_hz;
+  VD55G0_Res_t resolution;
+  int frame_rate;
+  VD55G0_MirrorFlip_t flip_mirror_mode;
+  VD55G0_PatGen_t patgen;
+  VD55G0_Flicker_t flicker;
+  uint8_t pixel_depth;
+  VD55G0_OutItf_Config_t out_itf;
+  VD55G0_AWUConfig_t awu;
+  /* VD55G0_GPIO_Mode_t | VD55G0_GPIO_Value_t | VD55G0_GPIO_Polarity_t */
+  uint8_t gpio_ctrl[VD55G0_GPIO_NB];
+} VD55G0_Config_t;
 
-/**
-  * @brief  Get sensor information (min/max exposure, gain ranges)
-  * @param  ctx      Pointer to VD55G0 context
-  * @param  out_min_exp   Pointer to store minimum exposure
-  * @param  out_max_exp   Pointer to store maximum exposure
-  * @param  out_again_max Pointer to store max analog gain (mdB)
-  * @param  out_dgain_max Pointer to store max digital gain (mdB)
-  * @return 0 if successful
-  */
-int VD55G0_GetSensorInfo(VD55G0_Ctx *ctx, uint32_t *out_min_exp, uint32_t *out_max_exp,
-                         uint32_t *out_again_max, uint32_t *out_dgain_max);
+typedef enum {
+  VD55G0_BAYER_NONE,
+  VD55G0_BAYER_RGGB,
+  VD55G0_BAYER_GRBG,
+  VD55G0_BAYER_GBRG,
+  VD55G0_BAYER_BGGR,
+} VD55G0_Bayer_t;
 
-/**
-  * @brief  Get default PHY bitrate for VD55G0
-  * @return PHY bitrate in bps (804000000 for 804 Mbps)
-  */
-uint32_t VD55G0_GetDefaultPHYBitrate(void);
+typedef struct VD55G0_Ctx
+{
+  /* API client must set these values */
+  void (*shutdown_pin)(struct VD55G0_Ctx *ctx, int value);
+  int (*read8)(struct VD55G0_Ctx *ctx, uint16_t addr, uint8_t *value);
+  int (*read16)(struct VD55G0_Ctx *ctx, uint16_t addr, uint16_t *value);
+  int (*read32)(struct VD55G0_Ctx *ctx, uint16_t addr, uint32_t *value);
+  int (*write8)(struct VD55G0_Ctx *ctx, uint16_t addr, uint8_t value);
+  int (*write16)(struct VD55G0_Ctx *ctx, uint16_t addr, uint16_t value);
+  int (*write32)(struct VD55G0_Ctx *ctx, uint16_t addr, uint32_t value);
+  int (*write_array)(struct VD55G0_Ctx *ctx, uint16_t addr, uint8_t *data, int data_len);
+  void (*delay)(struct VD55G0_Ctx *ctx, uint32_t delay_in_ms);
+  void (*log)(struct VD55G0_Ctx *ctx, int lvl, const char *format, va_list ap);
+  VD55G0_Bayer_t bayer;
+  /* driver internals. do not touch */
+  struct vd55g0_drv_ctx {
+    int state;
+    int cut_version;
+    uint8_t is_mono;
+    uint32_t pclk;
+    VD55G0_Config_t config_save;
+    uint8_t exposure_mode;
+    uint16_t manual_coarse_integration;
+    uint8_t manual_analog_gain;
+    uint16_t manual_digital_gain;
+  } ctx;
+} VD55G0_Ctx_t;
+
+int VD55G0_Init(VD55G0_Ctx_t *ctx, VD55G0_Config_t *config);
+int VD55G0_DeInit(VD55G0_Ctx_t *ctx);
+int VD55G0_Start(VD55G0_Ctx_t *ctx);
+int VD55G0_Stop(VD55G0_Ctx_t *ctx);
+int VD55G0_StartAutoWakeUp(VD55G0_Ctx_t *ctx);
+int VD55G0_SetFlipMirrorMode(VD55G0_Ctx_t *ctx, VD55G0_MirrorFlip_t mode);
+int VD55G0_GetBrightnessLevel(VD55G0_Ctx_t *ctx, int *level);
+int VD55G0_SetBrightnessLevel(VD55G0_Ctx_t *ctx, int level);
+int VD55G0_SetFlickerMode(VD55G0_Ctx_t *ctx, VD55G0_Flicker_t mode);
+int VD55G0_SetExposureMode(VD55G0_Ctx_t *ctx, VD55G0_ExposureMode_t mode);
+int VD55G0_SetAnalogGain(VD55G0_Ctx_t *ctx, int gain);
+int VD55G0_SetDigitalGain(VD55G0_Ctx_t *ctx, int gain);
+int VD55G0_SetExposureTime(VD55G0_Ctx_t *ctx, int exposure_us);
+int VD55G0_GetExposureRegRange(VD55G0_Ctx_t *ctx, uint32_t *min_us, uint32_t *max_us);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* VD55G0_H */
+#endif
+
+

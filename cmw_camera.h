@@ -57,7 +57,6 @@ extern "C" {
 
 typedef enum {
   CMW_UNKNOWN_Sensor = 0x0,
-  CMW_VD55G0_Sensor,
   CMW_VD66GY_Sensor,
   CMW_VD56G3_Sensor,
   CMW_IMX335_Sensor,
@@ -65,7 +64,8 @@ typedef enum {
   CMW_VD55G1_Sensor,
   CMW_VD65G4_Sensor,
   CMW_VD1943_Sensor,
-  CMW_VD5943_Sensor
+  CMW_VD5943_Sensor,
+  CMW_VD55G0_Sensor,
 } CMW_Sensor_Name_t;
 
 typedef struct
@@ -245,6 +245,9 @@ HAL_StatusTypeDef MX_DCMIPP_ClockConfig(DCMIPP_HandleTypeDef *hdcmipp);
 int CMW_CAMERA_PIPE_FrameEventCallback(uint32_t pipe);
 int CMW_CAMERA_PIPE_VsyncEventCallback(uint32_t pipe);
 void CMW_CAMERA_PIPE_ErrorCallback(uint32_t pipe);
+
+void CMW_DCMIPP_MspInit(DCMIPP_HandleTypeDef *hdcmipp);
+void CMW_DCMIPP_MspDeInit(DCMIPP_HandleTypeDef *hdcmipp);
 
 #ifdef __cplusplus
 }
