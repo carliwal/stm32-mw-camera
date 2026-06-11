@@ -27,6 +27,9 @@
 #if defined(USE_VD55G1_SENSOR)
 #include "cmw_vd55g1.h"
 #endif
+#if defined(USE_VD55G0_SENSOR)
+#include "cmw_vd55g0.h"
+#endif
 #if defined(USE_VD65G4_SENSOR)
 #include "cmw_vd65g4.h"
 #endif
@@ -85,6 +88,9 @@ static union
 #if defined(USE_VD55G1_SENSOR)
   CMW_VD55G1_t vd55g1_bsp;
 #endif
+#if defined(USE_VD55G0_SENSOR)
+  CMW_VD55G0_t vd55g0_bsp;
+#endif
 #if defined(USE_VD65G4_SENSOR)
   CMW_VD65G4_t vd65g4_bsp;
 #endif
@@ -114,6 +120,9 @@ static int32_t CMW_CAMERA_IMX335_Init( CMW_Sensor_Init_t *initSensors_params);
 #endif
 #if defined(USE_VD55G1_SENSOR)
 static int32_t CMW_CAMERA_VD55G1_Init( CMW_Sensor_Init_t *initSensors_params);
+#endif
+#if defined(USE_VD55G0_SENSOR)
+static int32_t CMW_CAMERA_VD55G0_Init( CMW_Sensor_Init_t *initSensors_params);
 #endif
 #if defined(USE_VD65G4_SENSOR)
 static int32_t CMW_CAMERA_VD65G4_Init( CMW_Sensor_Init_t *initSensors_params);
@@ -260,6 +269,14 @@ static int CMW_CAMERA_Probe_Sensor(CMW_Sensor_Init_t *initValues, CMW_Sensor_Nam
   if (ret == CMW_ERROR_NONE)
   {
     *sensorName = CMW_VD55G1_Sensor;
+    return ret;
+  }
+#endif
+#if defined(USE_VD55G0_SENSOR)
+  ret = CMW_CAMERA_VD55G0_Init(initValues);
+  if (ret == CMW_ERROR_NONE)
+  {
+    *sensorName = CMW_VD55G0_Sensor;
     return ret;
   }
 #endif
@@ -1123,6 +1140,107 @@ static int32_t CMW_CAMERA_VD55G1_Init( CMW_Sensor_Init_t *initSensors_params)
   CMW_VD55G1_SetDefaultSensorValues(&default_sensor_config);
   initSensors_params->sensor_config = initSensors_params->sensor_config ? initSensors_params->sensor_config : &default_sensor_config;
   sensor_config = (CMW_VD55G1_config_t*) (initSensors_params->sensor_config);
+
+  ret = Camera_Drv.Init(&camera_bsp, initSensors_params);
+  if (ret != CMW_ERROR_NONE)
+  {
+    return CMW_ERROR_COMPONENT_FAILURE;
+  }
+
+  csi_conf.NumberOfLanes = DCMIPP_CSI_ONE_DATA_LANE;
+  csi_conf.DataLaneMapping = DCMIPP_CSI_PHYSICAL_DATA_LANES;
+  csi_conf.PHYBitrate = DCMIPP_CSI_PHY_BT_800;
+  ret = HAL_DCMIPP_CSI_SetConfig(&hcamera_dcmipp, &csi_conf);
+  if (ret != HAL_OK)
+  {
+    return CMW_ERROR_PERIPH_FAILURE;
+  }
+
+  switch (sensor_config->pixel_format)
+  {
+    case CMW_PIXEL_FORMAT_RAW8:
+    {
+      dt_format = DCMIPP_CSI_DT_BPP8;
+      dt = DCMIPP_DT_RAW8;
+      break;
+    }
+    case CMW_PIXEL_FORMAT_RAW10:
+    case CMW_PIXEL_FORMAT_DEFAULT:
+    {
+      dt_format = DCMIPP_CSI_DT_BPP10;
+      dt = DCMIPP_DT_RAW10;
+      break;
+    }
+    default:
+      return CMW_ERROR_COMPONENT_FAILURE;
+  }
+
+  ret = HAL_DCMIPP_CSI_SetVCConfig(&hcamera_dcmipp, DCMIPP_VIRTUAL_CHANNEL0, dt_format);
+  if (ret != HAL_OK)
+  {
+    return CMW_ERROR_PERIPH_FAILURE;
+  }
+
+  csi_pipe_conf.DataTypeMode = DCMIPP_DTMODE_DTIDA;
+  csi_pipe_conf.DataTypeIDA = dt;
+  csi_pipe_conf.DataTypeIDB = 0;
+  /* Pre-initialize CSI config for all the pipes */
+  for (uint32_t i = DCMIPP_PIPE0; i <= DCMIPP_PIPE2; i++)
+  {
+    ret = HAL_DCMIPP_CSI_PIPE_SetConfig(&hcamera_dcmipp, i, &csi_pipe_conf);
+    if (ret != HAL_OK)
+    {
+      return CMW_ERROR_PERIPH_FAILURE;
+    }
+  }
+
+  return CMW_ERROR_NONE;
+}
+#endif
+
+#if defined(USE_VD55G0_SENSOR)
+static int32_t CMW_CAMERA_VD55G0_Init( CMW_Sensor_Init_t *initSensors_params)
+{
+  int32_t ret = CMW_ERROR_NONE;
+  DCMIPP_CSI_ConfTypeDef csi_conf = { 0 };
+  DCMIPP_CSI_PIPE_ConfTypeDef csi_pipe_conf = { 0 };
+  uint32_t dt_format = 0;
+  uint32_t dt = 0;
+  CMW_VD55G0_config_t default_sensor_config;
+  CMW_VD55G0_config_t *sensor_config;
+
+  memset(&camera_bsp, 0, sizeof(camera_bsp));
+  camera_bsp.vd55g0_bsp.Address     = CAMERA_VD55G0_ADDRESS;
+  camera_bsp.vd55g0_bsp.Init        = CMW_I2C_INIT;
+  camera_bsp.vd55g0_bsp.DeInit      = CMW_I2C_DEINIT;
+  camera_bsp.vd55g0_bsp.WriteReg    = CMW_I2C_WRITEREG16;
+  camera_bsp.vd55g0_bsp.ReadReg     = CMW_I2C_READREG16;
+  camera_bsp.vd55g0_bsp.Delay       = HAL_Delay;
+  camera_bsp.vd55g0_bsp.ShutdownPin = CMW_CAMERA_ShutdownPin;
+  camera_bsp.vd55g0_bsp.EnablePin   = CMW_CAMERA_EnablePin;
+
+  ret = CMW_VD55G0_Probe(&camera_bsp.vd55g0_bsp, &Camera_Drv);
+  if (ret != CMW_ERROR_NONE)
+  {
+    return CMW_ERROR_COMPONENT_FAILURE;
+  }
+
+  if ((connected_sensor != CMW_VD55G0_Sensor) && (connected_sensor != CMW_UNKNOWN_Sensor))
+  {
+    /* If the selected sensor in the application side has selected a different sensors than VD55G0 */
+    return CMW_ERROR_COMPONENT_FAILURE;
+  }
+
+  /* Special case: when resolution is not specified take the full sensor resolution */
+  if ((initSensors_params->width == 0) || (initSensors_params->height == 0))
+  {
+    initSensors_params->width = VD55G0_MAX_WIDTH;
+    initSensors_params->height = VD55G0_MAX_HEIGHT;
+  }
+
+  CMW_VD55G0_SetDefaultSensorValues(&default_sensor_config);
+  initSensors_params->sensor_config = initSensors_params->sensor_config ? initSensors_params->sensor_config : &default_sensor_config;
+  sensor_config = (CMW_VD55G0_config_t*) (initSensors_params->sensor_config);
 
   ret = Camera_Drv.Init(&camera_bsp, initSensors_params);
   if (ret != CMW_ERROR_NONE)
@@ -2178,6 +2296,11 @@ int32_t CMW_CAMERA_SetDefaultSensorValues( CMW_Advanced_Config_t *advanced_confi
 #if defined(USE_VD55G1_SENSOR)
   case CMW_VD55G1_Sensor:
     CMW_VD55G1_SetDefaultSensorValues(&advanced_config->config_sensor.vd55g1_config);
+    break;
+#endif
+#if defined(USE_VD55G0_SENSOR)
+  case CMW_VD55G0_Sensor:
+    CMW_VD55G0_SetDefaultSensorValues(&advanced_config->config_sensor.vd55g0_config);
     break;
 #endif
 #if defined(USE_VD65G4_SENSOR)

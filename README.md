@@ -40,6 +40,7 @@ The Camera Middleware serves as an intermediary layer between camera sensor driv
 
 Supported sensors:
 - `ST vd1943`
+- `ST vd55g0`
 - `ST vd55g1`
 - `ST vd56g3`
 - `ST vd5943`
@@ -56,6 +57,7 @@ Sensor drivers facilitate communication between the Camera Middleware and the ph
 
 - MB1854B IMX335 (Default)
 - ST VD66GY Camera module
+- ST VD55G0 Camera module
 - ST VD55G1 Camera module
 - ST STEVAL-1943-MC1 Camera module
 - OV5640 Camera module
@@ -71,6 +73,7 @@ typedef enum {
   CMW_VD56G3_Sensor,
   CMW_IMX335_Sensor,
   CMW_OV5640_Sensor,
+  CMW_VD55G0_Sensor,
   CMW_VD55G1_Sensor,
   CMW_VD65G4_Sensor,
   CMW_VD1943_Sensor,
@@ -88,6 +91,12 @@ typedef struct
   uint32_t pixel_format;  /*!< This parameter can be a value from @ref CMW_PIXEL_FORMAT */
   int line_len;
 } CMW_VD56G3_config_t;
+
+typedef struct
+{
+  uint32_t pixel_format; /*!< This parameter can be a value from @ref CMW_PIXEL_FORMAT */
+  uint32_t CSI_PHYBitrate;
+} CMW_VD55G0_config_t;
 
 typedef struct
 {
@@ -130,6 +139,7 @@ typedef struct
     CMW_IMX335_config_t imx335_config;
     CMW_VD66GY_config_t vd66gy_config;
     CMW_VD56G3_config_t vd56g3_config;
+    CMW_VD55G0_config_t vd55g0_config;
     CMW_VD55G1_config_t vd55g1_config;
     CMW_VD65G4_config_t vd65g4_config;
     CMW_VD1943_config_t vd1943_config;

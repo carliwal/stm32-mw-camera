@@ -25,6 +25,8 @@ extern "C" {
 #endif
 
 /* Sensors parameters */
+#define CAMERA_VD55G0_ADDRESS          0x20U
+#define CAMERA_VD55G0_FREQ_IN_HZ       12000000U
 #define CAMERA_VD55G1_ADDRESS          0x20U
 #define CAMERA_VD55G1_FREQ_IN_HZ       12000000U
 #define CAMERA_VD65G4_ADDRESS          0x20U

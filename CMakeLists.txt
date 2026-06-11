@@ -12,6 +12,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC 
   ./
   ./sensors
+  ./sensors/vd55g0
   ./sensors/vd55g1
   ./sensors/imx335
   ./sensors/ov5640
@@ -23,7 +24,10 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
   ./cmw_camera.c
   ./cmw_utils.c
 
+  ./sensors/cmw_vd55g0.c
   ./sensors/cmw_vd55g1.c
+
+  ./sensors/vd55g0/vd55g0.c
 
   ./sensors/vd55g1/vd55g1.c
   ./sensors/vd55g1/vd55g1_patch_cut_2.c
