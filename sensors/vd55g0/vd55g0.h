@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file    vd55g0.h
-  * @author  MDG Application Team
+  * @author  Silicon Biotech Team - SRA
   ******************************************************************************
   * @attention
   *
@@ -162,7 +162,7 @@ typedef struct VD55G0_Ctx
   void (*log)(struct VD55G0_Ctx *ctx, int lvl, const char *format, va_list ap);
   VD55G0_Bayer_t bayer;
   /* driver internals. do not touch */
-  struct drv_ctx {
+  struct vd55g0_drv_ctx {
     int state;
     uint8_t is_mono;
     uint32_t pclk;

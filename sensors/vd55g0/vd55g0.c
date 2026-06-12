@@ -1,7 +1,7 @@
 /**
   ******************************************************************************
   * @file    vd55g0.c
-  * @author  MDG Application Team
+  * @author  Silicon Biotech Team - SRA
   ******************************************************************************
   * @attention
   *
@@ -300,7 +300,7 @@ static int VD55G0_WaitState(VD55G0_Ctx_t *ctx, int state)
 
 static int VD55G0_SetBayerType(VD55G0_Ctx_t *ctx)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   uint16_t reg16;
   int ret;
 
@@ -380,7 +380,7 @@ static int VD55G0_BootMcu(VD55G0_Ctx_t *ctx)
 
 static int VD55G0_Gpios(VD55G0_Ctx_t *ctx)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   int ret;
   int i;
 
@@ -460,7 +460,7 @@ static uint32_t VD55G0_GetPixelClock(VD55G0_Ctx_t *ctx)
 
 static int VD55G0_SetupClocks(VD55G0_Ctx_t *ctx)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   int ret;
 
   if (drv_ctx->config_save.out_itf.data_rate_in_mps < VD55G0_MIN_DATARATE ||
@@ -535,7 +535,7 @@ static int VD55G0_SetupOutput(VD55G0_Ctx_t *ctx)
 
 static int VD55G0_SetupSize(VD55G0_Ctx_t *ctx)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   const struct vd55g0_mode *mode;
   int ret;
 
@@ -567,7 +567,7 @@ static int VD55G0_SetupSize(VD55G0_Ctx_t *ctx)
 
 static int VD55G0_SetupLineLen(VD55G0_Ctx_t *ctx)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   const struct vd55g0_mode *mode;
   int min_line_len_mipi;
   int min_line_len;
@@ -595,7 +595,7 @@ static int VD55G0_SetupLineLen(VD55G0_Ctx_t *ctx)
 
 static int VD55G0_ComputeFrameLength(VD55G0_Ctx_t *ctx, int fps, uint16_t *frame_length)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   const struct vd55g0_mode *mode;
   int min_frame_length;
   int req_frame_length;
@@ -625,7 +625,7 @@ static int VD55G0_ComputeFrameLength(VD55G0_Ctx_t *ctx, int fps, uint16_t *frame
 
 static int VD55G0_SetupFrameRate(VD55G0_Ctx_t *ctx)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   uint16_t frame_length;
   int ret;
 
@@ -646,7 +646,7 @@ static int VD55G0_SetupFrameRate(VD55G0_Ctx_t *ctx)
 
 static int VD55G0_SetManualExpoGains(VD55G0_Ctx_t *ctx)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   int ret;
 
   ret = ctx->write16(ctx, VD55G0_REG_MANUAL_COARSE_EXPOSURE, drv_ctx->manual_coarse_integration);
@@ -667,7 +667,7 @@ static int VD55G0_SetManualExpoGains(VD55G0_Ctx_t *ctx)
 
 static int VD55G0_SetupExposure(VD55G0_Ctx_t *ctx)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   uint8_t reg;
   int ret;
 
@@ -691,7 +691,7 @@ static int VD55G0_SetupExposure(VD55G0_Ctx_t *ctx)
 
 static int VD55G0_SetupMirrorFlip(VD55G0_Ctx_t *ctx)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   uint8_t mode;
   int ret;
 
@@ -720,7 +720,7 @@ static int VD55G0_SetupMirrorFlip(VD55G0_Ctx_t *ctx)
 
 static int VD55G0_SetupPatGen(VD55G0_Ctx_t *ctx)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   uint16_t value = VD55G0_PATGEN_CTRL_DISABLE;
   int ret;
 
@@ -779,7 +779,7 @@ static int VD55G0_SetFlicker(VD55G0_Ctx_t *ctx, VD55G0_Flicker_t flicker)
 
 static int VD55G0_Flicker(VD55G0_Ctx_t *ctx)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
 
   return VD55G0_SetFlicker(ctx, drv_ctx->config_save.flicker);
 }
@@ -853,7 +853,7 @@ static int VD55G0_StopStreaming(VD55G0_Ctx_t *ctx)
 
 int VD55G0_Init(VD55G0_Ctx_t *ctx, VD55G0_Config_t *config)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   int ret;
 
   if (config->frame_rate < VD55G0_MIN_FPS)
@@ -892,7 +892,7 @@ int VD55G0_Init(VD55G0_Ctx_t *ctx, VD55G0_Config_t *config)
 
 int VD55G0_DeInit(VD55G0_Ctx_t *ctx)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
 
   if (drv_ctx->state == VD55G0_ST_STREAMING)
     return -1;
@@ -905,7 +905,7 @@ int VD55G0_DeInit(VD55G0_Ctx_t *ctx)
 
 int VD55G0_Start(VD55G0_Ctx_t *ctx)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   int ret;
 
   ret = VD55G0_Setup(ctx);
@@ -922,7 +922,7 @@ int VD55G0_Start(VD55G0_Ctx_t *ctx)
 
 int VD55G0_Stop(VD55G0_Ctx_t *ctx)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   int ret;
 
   ret = VD55G0_StopStreaming(ctx);
@@ -935,7 +935,7 @@ int VD55G0_Stop(VD55G0_Ctx_t *ctx)
 
 int VD55G0_SetFlipMirrorMode(VD55G0_Ctx_t *ctx, VD55G0_MirrorFlip_t mode)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   int is_streaming;
   int ret;
 
@@ -991,7 +991,7 @@ int VD55G0_SetBrightnessLevel(VD55G0_Ctx_t *ctx, int level)
 
 int VD55G0_SetFlickerMode(VD55G0_Ctx_t *ctx, VD55G0_Flicker_t mode)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   int ret;
 
   ret = VD55G0_SetFlicker(ctx, mode);
@@ -1005,7 +1005,7 @@ int VD55G0_SetFlickerMode(VD55G0_Ctx_t *ctx, VD55G0_Flicker_t mode)
 
 int VD55G0_SetExposureMode(VD55G0_Ctx_t *ctx, VD55G0_ExposureMode_t mode)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   int ret;
 
   if ((mode != VD55G0_EXPOSURE_MODE_AUTO) &&
@@ -1026,7 +1026,7 @@ int VD55G0_SetExposureMode(VD55G0_Ctx_t *ctx, VD55G0_ExposureMode_t mode)
 
 int VD55G0_SetAnalogGain(VD55G0_Ctx_t *ctx, int gain)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   int ret;
 
   if ((gain < VD55G0_ANALOG_GAIN_MIN) || (gain > VD55G0_ANALOG_GAIN_MAX))
@@ -1042,7 +1042,7 @@ int VD55G0_SetAnalogGain(VD55G0_Ctx_t *ctx, int gain)
 
 int VD55G0_SetDigitalGain(VD55G0_Ctx_t *ctx, int gain)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   int ret;
 
   if ((gain < (int)VD55G0_DIGITAL_GAIN_MIN) || (gain > (int)VD55G0_DIGITAL_GAIN_MAX))
@@ -1064,7 +1064,7 @@ int VD55G0_SetDigitalGain(VD55G0_Ctx_t *ctx, int gain)
 
 int VD55G0_GetExposureRegRange(VD55G0_Ctx_t *ctx, uint32_t *min_us, uint32_t *max_us)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   uint32_t line_time_in_us;
   uint16_t frame_length;
   int ret;
@@ -1089,7 +1089,7 @@ int VD55G0_GetExposureRegRange(VD55G0_Ctx_t *ctx, uint32_t *min_us, uint32_t *ma
 
 int VD55G0_SetExposureTime(VD55G0_Ctx_t *ctx, int exposure_us)
 {
-  struct drv_ctx *drv_ctx = &ctx->ctx;
+  struct vd55g0_drv_ctx *drv_ctx = &ctx->ctx;
   int32_t ret;
   uint32_t exp_min, exp_max;
   uint32_t line_time_in_us;
